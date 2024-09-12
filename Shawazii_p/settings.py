@@ -16,6 +16,45 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+USE_USER = os.getenv('USE_USER')
+
+if USE_USER == 'Land-buyer':
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID_USER1')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY_USER1')
+elif USE_USER == 'Land-Seller':
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID_USER2')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY_USER2')
+elif USE_USER == 'Lawyer':
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID_USER3')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY_USER3')
+else:
+    raise ValueError('Invalid user selection')
+
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+
+# Optional settings
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+# Django's default file storage backend
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Static files (CSS, JavaScript, images)
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# Media files (user uploads)
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/

@@ -1,24 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.conf import settings
-import os
+from django.core.exceptions import ValidationError
+
+def validate_file_type(file):
+    valid_mime_types = ['application/pdf', 'image/jpeg', 'image/png']
+    mime_type = file.content_type
+
+    if mime_type not in valid_mime_types:
+        raise ValidationError('Unsupported file type. Only PDF, JPEG, and PNG files are allowed.')
 
 class Document(models.Model):
     title = models.CharField(max_length=255, unique=True)
-    file = models.FileField(upload_to='documents/', blank=True, null=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)  
-    # file_size = models.PositiveIntegerField( blank=True, null=True) 
+    file = models.FileField(upload_to='documents/', validators=[validate_file_type], blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
-    is_draft = models.BooleanField(default=False) # This only applies to the drafted contract.
-    editable_by = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='editable_documents', null=True, blank=True)  # Lawyer only
-    land_owner_agreed = models.BooleanField(default=False)  # This is the agreement status of land owner
-    land_seller_agreed = models.BooleanField(default=False)  # This is the agreement status of land seller
-    
-    
-    def _str_ (self):
-        return self.title
 
-    # def save(self, *args, **kwargs):
-    #     if self.file:
-    #         self.file_size = self.file.size
-    #     super().save(*args, **kwargs)
+    def __str__(self):
+        return self.title

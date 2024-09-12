@@ -1,5 +1,4 @@
-from rest_framework import generics
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -39,38 +38,3 @@ class DocumentDetailView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class DocumentCreateDraftView(APIView):
-    def post(self, request):
-        data = request.data.copy()
-        title = data.get('title', '')
-        
-        if title.lower() == "drafted contract":
-            data['is_draft'] = True
-        
-        serializer = DocumentSerializer(data=data)
-        if serializer.is_valid():
-            document = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-class DocumentAgreementView(APIView):
-    def patch(self, request, pk):
-        document = get_object_or_404(Document, pk=pk)
-        user = request.user
-        
-        if not (user == document.owner or user in [document.land_owner, document.land_seller]):
-            return Response({'detail': 'You do not have permission to agree to this document.'}, status=status.HTTP_403_FORBIDDEN)
-        
-        if user == document.land_owner:
-            document.land_owner_agreed = True
-        elif user == document.land_seller:
-            document.land_seller_agreed = True
-        
-        document.save()
-        return Response({'detail': 'Agreement recorded successfully.'}, status=status.HTTP_200_OK)
-
-    def get(self, request, pk):
-        document = get_object_or_404(Document, pk=pk)
-        serializer = DocumentSerializer(document)
-        return Response(serializer.data)
